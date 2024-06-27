@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #cee2f6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            background-color: #cee2f6;
+            padding: 20px;
+            border-radius: 40px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+            margin-top: 50px;
+        }
+        .question {
+            margin-bottom: 20px;
+            font-size: medium  ;
+        }   
+        .question h3 {
+        display: flex;
+        flex-wrap: wrap;
+        font-size: medium;
+         }
+         .question-number {
+        font-weight: bold;
+        margin-right: 5px;
+        flex-wrap: wrap;
+       
+          }
+        .options {
+            margin-top: 10px;
+        }
+        .form-check-input {
+            margin-right: 10px;
+            font-size: medium;
+        }
+        
+        .submit-btn {
+            background-color: #007bff;
+            color: #ffffff;
+            margin-top: 20px;
+            text-align: right;
+            font-size: large;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-align">Generated Quiz</h1>
+
+        {% if not results %}
+        <form action="/submit_quiz" method="post">
+            <input type="hidden" name="questions" value="{{ questions | tojson }}">
+            {% for question in questions %}
+            <div class="question">
+                <h3><span class="question-number">Question {{ loop.index }}: </span> {{ question['question'] }}</h3>
+                <div class="options">
+                    {% set group_id = 'group_' + loop.index|string %}
+                    {% for option in question['options'] %}
+                    <div class="form-check">
+                        <!-- Use a consistent name for each set of radio buttons -->
+                        <input class="form-check-input" type="radio" id="option_{{ loop.index }}_{{ loop.index0 }}" name="{{ group_id }}" value="{{ option }}">
+                        <label class="form-check-label" for="option_{{ loop.index }}_{{ loop.index0 }}">{{ loop.index }}. {{ option }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            <button type="submit" class="submit-btn">Submit Quiz</button>
+        </form>
+        
+        {% else %}
+        <h3 class="text-center">Your Score: {{ score }} / {{ total }}</h3>
+        <hr>
+        {% for result in results %}
+        <div class="question">
+            <h4>Question {{ loop.index }}: {{ result['question'] }}</h4>
+            <p>Your answer: <strong>{{ result['user_answer'] }}</strong></p>
+            <p>Correct answer: <strong>{{ result['correct_answer'] }}</strong></p>
+            {% if result['is_correct'] %}
+            <p class="correct">You got it right!</p>
+            {% else %}
+            <p class="incorrect">You got it wrong!</p>
+            {% endif %}
+            <hr>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+</body>
+</html>

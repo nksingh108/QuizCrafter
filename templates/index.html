@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f1f3f6;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            margin-top: 5px;
+        }
+        .sidebar {
+            flex: 0 0 30%;
+            background-color: #cee2f6;
+            border: 1px solid #090a0a;
+            border-radius: 25px;
+            padding: 20px;
+            margin-right: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: calc(100vh - 120px); /* Adjust sidebar height to fit content */
+            overflow-y: auto; /* Enable scrolling if content exceeds sidebar height */
+        }
+        .main-content {
+            flex: 1;
+            background-color: #deeaf6;
+            border: 1px solid #030303;
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: calc(100vh - 120px); /* Adjust main content height to fit content */
+            overflow-y: auto; /* Enable scrolling if content exceeds main content height */
+        }
+        .submit-btn {
+            background-color: #007bff;
+            color: #ffffff;
+            margin-top: 20px;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .quiz-frame {
+            width: 100%;
+            height: 100%;
+            border: 5px;
+        }
+        .quiz-area{
+            text-align: left;
+            font-size: larger;
+        }
+        .title-container {
+            text-align: center;
+            vertical-align: middle;
+            padding: 10px 0;
+            border: 1px solid #030303;
+            border-radius: 10px;
+            font-size: 40px;
+            font-weight: bold;
+            color: #333;
+            background-color: #d49696;
+           
+        }
+        .bottom-sec{
+            text-align: center;
+            vertical-align: middle;
+            padding: 10px 0;
+            border: 1px solid #030303;
+            border-radius: 10px;
+            font-size: 40px;
+            font-weight: bold;
+            color: #333;
+            background-color: #d49696;
+        }
+    </style>
+</head>
+<body>
+    <div class="title-container">
+        <h1>QuizCrafter with LLM</h1>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Quiz Parameters</h2>
+            <form id="quiz-form">
+                <!-- <div class="form-group"> 
+                    <label for="email">E-Mail</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>  -->
+                <div class="form-group">
+                    <label for="quiz_for">Quiz For</label>
+                    <select class="form-control" id="quiz_for" name="quiz_for" onchange="updateOptions()">
+                        <option value="">Select...</option>
+                        <option value="student">Student</option>
+                        <option value="professional">Professional</option>
+                        <option value="programming">Programming Community</option>
+                        <option value="datascience">Data Science Community</option>
+                    </select>
+                </div>
+                <div class="form-group" id="subjectOptions" style="display: none;">
+                    <label for="subject">Subject</label>
+                    <select class="form-control" id="subject" name="subject">
+                        <option value="">Select...</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group" id="schoolingOptions" style="display: none;">
+                    <label for="schooling_level">Schooling Level</label>
+                    <select class="form-control" id="schooling_level" name="schooling_level">
+                        <option value="">Select...</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="numQuestions">Number of Questions</label>
+                    <input type="number" class="form-control" id="numQuestions" name="numQuestions" min="1" max="10" value="10" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="language">Language</label>
+                    <select class="form-control" id="language" name="language">
+                        <option value="English">English</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Spanish">Spanish</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="level">Quiz Level</label>
+                    <select class="form-control" id="level" name="level">
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn submit-btn btn-block">Generate Quiz</button>
+            </form>
+        </div>
+        <div class="main-content">
+            <iframe id="quiz-iframe" class="quiz-frame" src=""></iframe>
+            
+        </div>
+    </div>
+    <div class="bottom-sec">
+        <h1>Created by - Neeraj Kumar Singh</h1>
+    </div>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function updateOptions() {
+            var quizFor = document.getElementById('quiz_for').value;
+            var subjectOptions = document.getElementById('subjectOptions');
+            var subjectSelect = document.getElementById('subject');
+            var schoolingOptions = document.getElementById('schoolingOptions');
+            var schoolingLevelSelect = document.getElementById('schooling_level');
+
+            // Clear previous options
+            subjectSelect.innerHTML = '';
+            schoolingLevelSelect.innerHTML = '';
+
+            if (quizFor === 'student') {
+                // Show subject options for students
+                var subjects = [
+                    { value: 'select', label: 'select ' },
+                    { value: 'math', label: 'Mathematics' },
+                    { value: 'science', label: 'Science' },
+                    { value: 'biology', label: 'Biology' },
+                    { value: 'history', label: 'History' }
+                    // Add more subjects as needed
+                ];
+
+                // Populate subject options
+                subjects.forEach(function(subject) {
+                    var optionElement = document.createElement('option');
+                    optionElement.value = subject.value;
+                    optionElement.textContent = subject.label;
+                    subjectSelect.appendChild(optionElement);
+                });
+
+                // Show the subject select
+                subjectOptions.style.display = 'block';
+                schoolingOptions.style.display = 'none'; // Hide schooling options initially
+            } else if (quizFor === 'professional') {
+                // Populate options for professional
+                var options = [
+                    { value: 'Finance_and_Accounting', label: 'Finance and Accounting' },
+                    { value: 'Engineering', label: 'Engineering' },
+                    { value: 'Healthcare_and_Medicine' , label: 'Healthcare and Medicine' }
+                    // Add more options as needed
+                ];
+
+                // Populate options for professional community
+                options.forEach(function(option) {
+                    var optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.label;
+                    subjectSelect.appendChild(optionElement);
+                });
+
+                // Show the subject select
+                subjectOptions.style.display = 'block';
+                schoolingOptions.style.display = 'none'; // Hide schooling options for professional
+            } else if (quizFor === 'programming') {
+                // Populate options for programming community
+                var options = [
+                    { value: 'javascript', label: 'JavaScript' },
+                    { value: 'python', label: 'Python' },
+                    { value: 'java', label: 'Java' },
+                    { value: '.NET', label: '.NET' },
+                    { value: 'SQL', label: 'SQL' },
+                    { value: 'Database', label: 'Database' }
+                    // Add more programming languages as needed
+                ];
+                options.forEach(function(option) {
+                    var optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.label;
+                    subjectSelect.appendChild(optionElement);
+                });
+
+                // Hide subject and schooling options
+                subjectOptions.style.display = 'block';
+                schoolingOptions.style.display = 'none';
+            } else if (quizFor === 'datascience') {
+                // Populate options for data science community
+                var options = [
+                    { value: 'machinelearning', label: 'Machine Learning' },
+                    { value: 'statistics', label: 'Statistics' },
+                    { value: 'bigdata', label: 'Big Data' }
+                    // Add more data science topics as needed
+                ];
+                options.forEach(function(option) {
+                    var optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.label;
+                    subjectSelect.appendChild(optionElement);
+                });
+
+                // Hide subject and schooling options
+                subjectOptions.style.display = 'block';
+                schoolingOptions.style.display = 'none';
+            } else {
+                // Hide subject and schooling options if none selected
+                subjectOptions.style.display = 'block';
+                schoolingOptions.style.display = 'none';
+            }
+
+            // Populate schooling options if applicable
+            if (subjects) {
+                subjectSelect.addEventListener('change', function() {
+                    var selectedSubject = this.value;
+                    // Clear previous options
+                    schoolingLevelSelect.innerHTML = '';
+
+                    if (selectedSubject === 'math') {
+                        var schoolingLevels = [
+                            { value: 'elementary', label: 'Elementary School' },
+                            { value: 'middle', label: 'Middle School' },
+                            { value: 'high', label: 'High School' }
+                        ];
+                    } else if (selectedSubject === 'science') {
+                        var schoolingLevels = [
+                            { value: 'elementary', label: 'Elementary School' },
+                            { value: 'middle', label: 'Middle School' },
+                            { value: 'high', label: 'High School' }
+                        ];
+                    } else if (selectedSubject === 'biology') {
+                        var schoolingLevels = [
+                            { value: 'elementary', label: 'Elementary School' },
+                            { value: 'middle', label: 'Middle School' },
+                            { value: 'high', label: 'High School' }
+                        ];
+                    } else if (selectedSubject === 'history') {
+                        var schoolingLevels = [
+                           { value: 'elementary', label: 'Elementary School' },
+                            { value: 'middle', label: 'Middle School' },
+                            { value: 'high', label: 'High School' }
+                        ];
+                    }
+
+                    // Populate schooling level options
+                    if (schoolingLevels) {
+                        schoolingLevels.forEach(function(level) {
+                            var optionElement = document.createElement('option');
+                            optionElement.value = level.value;
+                            optionElement.textContent = level.label;
+                            schoolingLevelSelect.appendChild(optionElement);
+                        });
+
+                        // Show the schooling level select
+                        schoolingOptions.style.display = 'block';
+                    } else {
+                        schoolingOptions.style.display = 'none'; // Hide if no levels found
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+        $('#quiz-form').on('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        var numQuestions = $('#numQuestions').val();
+        var quizFor = $('#quiz_for').val(); // Add this line to get quiz_for value
+
+        // Construct the data to send with the request
+        var data = {
+            numQuestions: numQuestions,
+            quiz_for: quizFor, // Ensure the key matches with Flask request.form.get()
+            subject: $('#subject').val(),
+            schooling_level: $('#schooling_level').val(),
+            level: $('#level').val(),
+            language: $('#language').val(),
+            //email: $('#email').val() // Add email field if needed
+        };
+
+        // Send an AJAX POST request to generate the quiz
+        $.ajax({
+            type: 'POST',
+            url: '/generate_quiz',
+            data: data,
+            success: function(response) {
+                // Load the response HTML into the quiz iframe
+                $('#quiz-iframe').attr('srcdoc', response);
+            },
+            error: function(error) {
+                $('#quiz-iframe').attr('srcdoc', '<p>Error generating quiz, Please generate Again</p>');
+            }
+        });
+    });
+});
+
+    </script>
+</body>
+</html>
+
+
+
+
+
