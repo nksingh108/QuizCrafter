@@ -43,19 +43,13 @@ High
 
 
 Getting Started
-(Include instructions on how to set up and run your project here)
-Usage
-(Provide a brief guide on how to use the application, including any screenshots if available)
-Technologies Used
-
-Gemini 1.5 Flash model
-(List other technologies, frameworks, or libraries used in your project)
 
 Contributing
 Contributions to QuizCrafter are welcome! Please feel free to submit a Pull Request.
-License
-(Include your license information here)
+
 Contact
-(Your contact information or link to your GitHub profile)
+GitHub -    https://github.com/nksingh108
+Linkedin -  https://www.linkedin.com/in/nksingh108/
+
 
 Feel free to star ⭐ this repository if you find it helpful!
